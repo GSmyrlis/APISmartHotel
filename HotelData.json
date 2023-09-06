@@ -1,0 +1,12 @@
+{
+    "HotelName": "Hotel Kasterini",
+    "HotelAddress": "123 Main St",
+    "HotelInfo": "This is the Kasterini Hotel, created by GSmyrlis in the old times of the army. This Hotel was created to be the main example we wanna use.",
+    "HotelEmail": "info@hotelkasterini.com",
+    "HotelWebsite": "https://www.hotelkasterini.com",
+    "RestaurantMenuLink": "https://www.hotelkasterini.com/menu",
+    "ReceptionTelephone": 302351047552,
+    "RestaurantReservPeopleNumber": 4,
+    "CleaningServiceActivate": true,
+    "CleaningServiceReservDateTime": "[\"2023-07-25T12:00:00\", \"2023-07-26T14:30:00\"]"
+}
