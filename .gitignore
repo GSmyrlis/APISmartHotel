@@ -145,7 +145,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
+#every fucking pyc
+*.pyc
+#the base
+*.db
 # pytype static type analyzer
 .pytype/
 
