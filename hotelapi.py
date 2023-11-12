@@ -7,6 +7,7 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
+# Apply CORS to the Flask app with the custom options
 CORS(app)
 bcrypt = Bcrypt(app)
 
@@ -32,7 +33,8 @@ def create_tables():
                 HotelEmail TEXT,
                 HotelWebsite TEXT,
                 RestaurantMenuLink TEXT,
-                ReceptionTelephone TEXT
+                ReceptionTelephone TEXT,
+                AboutHotelHtmlContent TEXT
             )'''
         )
         
@@ -566,6 +568,19 @@ def delete_restaurant_request(decoded_token):
 
     return jsonify({"message": "Restaurant reservation request deleted successfully."}), 200
 
+@app.route('/api/hotel/restaurant/<int:request_id>', methods=['DELETE'])
+@admin_required
+def delete_request_by_id(request_id):
+    try:
+        with connect_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM RestaurantReservation WHERE id = ?", (request_id,))
+            conn.commit()
+
+        return jsonify({"message": f"Restaurant request with ID {request_id} deleted successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/hotel/cleaning', methods=['POST'])
 @validate_token(roles=["user"])
@@ -609,8 +624,20 @@ def delete_cleaning_request(decoded_token):
 
     return jsonify({"message": "Cleaning service request deleted successfully."}), 200
 
+@app.route('/api/hotel/cleaning/<int:request_id>', methods=['DELETE'])
+@admin_required
+def delete_cleaning_request_by_id(request_id):
+    try:
+        with connect_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM CleaningServiceReservation WHERE id = ?", (request_id,))
+            conn.commit()
 
-        
+        return jsonify({"message": f"Cleaning service request with ID {request_id} deleted successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/hotel/rating', methods=['GET'])
 @validate_token(roles=["user"])
 def get_rating_data(decoded_token):
@@ -710,6 +737,70 @@ def update_cleaning_service_reservation(reservation_id):
                        (data.get("RequestState"), data.get("AdminMessage"), reservation_id))
         conn.commit()
     return jsonify({"message": "Cleaning service reservation updated successfully."})
+
+@app.route('/api/hotel/about', methods=['GET'])
+def get_about_hotel():
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT AboutHotelHtmlContent FROM hotel WHERE id = 1")
+        result = cursor.fetchone()
+        if result:
+            return jsonify({"AboutHotelHtmlContent": result[0]})
+        else:
+            return jsonify({"message": "About Hotel data not found."}), 404
+        
+import base64
+
+@app.route('/api/rates', methods=['GET'])
+@admin_required
+def get_all_rates():
+    try:
+        with connect_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT RateHospitality, RateComfort, RateLocation, RateFacilities, RateOverall, RoomNumber FROM room')
+            rates = cursor.fetchall()
+
+            if rates:
+                # Convert the result to a list of dictionaries
+                rate_list = []
+                for rate in rates:
+                    rate_dict = {
+                        'Hospitality': rate[0],
+                        'Comfort': rate[1],
+                        'Location': rate[2],
+                        'Facilities': rate[3],
+                        'Overall': rate[4],
+                        'RoomNumber': rate[5]
+                    }
+                    rate_list.append(rate_dict)
+
+                return jsonify(rate_list)
+            else:
+                return jsonify({'message': 'No rates found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/hotel/about', methods=['POST'])
+@admin_required
+def update_about_hotel():
+    data = request.json
+    about_hotel_base64 = data.get("AboutHotelHtmlContent")
+
+    if not about_hotel_base64:
+        return jsonify({"error": "Missing required data"}), 400
+
+    about_hotel_html_content = about_hotel_base64
+
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE hotel SET AboutHotelHtmlContent = ? WHERE id = 1',
+                       (about_hotel_html_content,))
+        conn.commit()
+
+    return jsonify({"message": "About Hotel data updated successfully."}), 200
+
+
 
 if __name__ == '__main__':
     app.run()

@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.db
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -147,8 +148,6 @@ dmypy.json
 .pyre/
 #every fucking pyc
 *.pyc
-#the base
-*.db
 # pytype static type analyzer
 .pytype/
 
